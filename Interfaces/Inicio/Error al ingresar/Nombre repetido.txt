@@ -1,0 +1,3 @@
+----- Nombre repetido -----
+En caso de que quieras colocar un nombre que ya esta en uso, se mostrará una ventana en la cual se menciona que ese nombre ya está ocupado, por lo que debes seleccionar el botón de "aceptar" para que te solicite el nombre nuevamente y colocar otro diferente o en otro caso, agregar una letra o número que lo distinga del que ya esta registrado.
+Por ejemplo el primer usuario se llama Fabis y el segundo usuario se puede llamar Fabis2

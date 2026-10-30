@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pizarra Interactiva</title>
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;font-family: 'Segoe UI', sans-serif;
+    background: #f3f4f6;
+    color: #333;
+    height: 100vh;
+    overflow: hidden;
+  }
+  #main-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100vh;
+  }
+  #left {
+    flex: 3;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  #right {
+    flex: 1;
+    padding: 20px;
+    background: #ffffff;
+    border-left: 2px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+  }
+  h2, h3 {
+    margin-top: 0;
+  }
+  canvas {
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    cursor: none;
+  }
+  #toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  label {
+    font-size: 0.9em;
+  }
+  input[type="text"], input[type="number"], input[type="color"] {
+    padding: 4px 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  button {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  button:hover {
+    background-color: #2563eb;
+  }
+  #users {
+    margin-top: 10px;
+    font-size: 0.9em;
+  }
+  #chat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  #chat-messages {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    background: #f9fafb;
+    border-radius: 6px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+  }
+  #chat-input {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  #chat-input select,
+  #chat-input input {
+    flex: 1;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  #chat-input button {
+    background-color: #10b981;
+    padding: 6px 12px;
+  }
+  #chat-input button:hover {
+    background-color: #059669;
+  }
+  #cursorPreview {
+    position: absolute;
+    pointer-events: none;
+    border-radius: 50%;
+    border: 1px solid #000;
+    z-index: 9999;
+    mix-blend-mode: difference; 
+  }
+  </style>
+</head>
+<body>
+  <div id="main-container">
+    <!-- PIZARRA -->
+    <div id="left">
+      <h2>Pizarra Interactiva</h2>
+      <div id="toolbar">
+        <label>Usuario: <input type="text" id="user_id" readonly /></label>
+        <label><input type="color" id="color" value="#000000" /></label>
+        <label>Grosor: <input type="number" id="size" min="1" max="10" value="2" /></label>
+        <label><input type="checkbox" id="eraser" /> Borrador</label>
+        <button onclick="clearCanvasGlobal()">Limpiar</button>
+        <button onclick="saveImage()">Guardar</button>
+      </div>
+      <canvas id="board" width="800" height="500"></canvas>
+      <div id="users"><strong>Conectados:</strong> <span id="userList">—</span></div>
+    </div>
+
+    <!-- CHAT -->
+    <div id="right">
+      <h3>Chat</h3>
+      <div id="chat">
+        <div id="chat-messages"></div>
+        <div id="chat-input">
+          <select id="privateTo">
+            <option value="">Público (todos)</option>
+          </select>
+          <input type="text" id="chatText" placeholder="Escribe un mensaje..." />
+          <button onclick="sendChat()">Enviar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="cursorPreview"></div>
+  
+  <script>
+    const canvas = document.getElementById("board");
+    const ctx = canvas.getContext("2d");
+    const colorInput = document.getElementById("color");
+    const sizeInput = document.getElementById("size");
+    const eraser = document.getElementById("eraser");
+    const userInput = document.getElementById("user_id");
+    const userList = document.getElementById("userList");
+    const chatMessages = document.getElementById("chat-messages");
+    const chatText = document.getElementById("chatText");
+    const cursorPreview = document.getElementById("cursorPreview");
+
+    let drawing = false;
+    let users = new Set();
+    let name = "";
+
+    const socket = new WebSocket("ws://" + location.hostname + ":8765");
+    socket.addEventListener("error", (event) => {
+      alert("Error de conexión. Asegúrate de que el servidor esté en ejecución.");
+      console.error("WebSocket error:", event);
+    });
+
+    socket.addEventListener("open", () => {
+      while (!name) {
+        const entered = prompt("Ingrese su nombre de usuario:").trim();
+        if (entered) {
+          socket.send(JSON.stringify({ type: "join", user_id: entered }));
+          name = entered;
+          userInput.value = name;
+        }
+      }
+    });
+
+    canvas.addEventListener("mousedown", () => drawing = true);
+    canvas.addEventListener("mouseup", () => drawing = false);
+    canvas.addEventListener("mouseleave", () => drawing = false);
+
+    canvas.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Cursor visual
+      const size = parseInt(sizeInput.value);
+      cursorPreview.style.width = cursorPreview.style.height = size * 2 + "px";
+      cursorPreview.style.left = e.pageX - size + "px";
+      cursorPreview.style.top = e.pageY - size + "px";
+      cursorPreview.style.background = eraser.checked ? "#fff" : colorInput.value;
+
+      if (!drawing) return;
+
+      const stroke = {
+        type: "draw",
+        user_id: name,
+        x, y,
+        color: eraser.checked ? "#ffffff" : colorInput.value,
+        size
+      };
+
+      socket.send(JSON.stringify(stroke));
+      drawStroke(stroke);
+    });
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "draw") drawStroke(data);
+      else if (data.type === "clear") ctx.clearRect(0, 0, canvas.width, canvas.height);
+      else if (data.type === "chat") {
+        appendChat(data.user_id, data.message, data.to_user_id);
+      }
+      else if (data.type === "join") {
+        users.add(data.user_id);
+        updateUserList();
+        appendSystemMessage(`🔵 ${data.user_id} se ha conectado.`);
+      } else if (data.type === "leave") {
+        users.delete(data.user_id);
+        updateUserList();
+        appendSystemMessage(`🔴 ${data.user_id} se ha desconectado.`);
+      } else if (data.type === "reject") {
+        alert(`El nombre '${data.user_id}' ya está en uso.`);
+        name = "";
+        location.reload();
+      }
+    };
+
+    function drawStroke({ x, y, color, size }) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    function clearCanvasGlobal() {
+      socket.send(JSON.stringify({ type: "clear", user_id: name }));
+    }
+
+    function saveImage() {
+      const link = document.createElement('a');
+      link.download = 'pizarra.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    function updateUserList() {
+  const options = Array.from(users).map(user => {
+    if (user === name) return "";
+    return `<option value="${user}">${user}</option>`;
+  }).join("");
+  userList.textContent = Array.from(users).join(", ");
+  document.getElementById("privateTo").innerHTML =
+    `<option value="">Público (todos)</option>` + options;
+}
+
+function sendChat() {
+  const text = chatText.value.trim();
+  if (!text) return;
+
+  const toUser = document.getElementById("privateTo").value;
+
+  socket.send(JSON.stringify({
+    type: "chat",
+    user_id: name,
+    message: text,
+    to_user_id: toUser  // vacio si es broadcast
+  }));
+
+  chatText.value = "";
+}
+
+function appendChat(user, message, to_user_id = "") {
+  const div = document.createElement("div");
+  const isPrivate = to_user_id ? " <em>(privado para " + to_user_id + ")</em>" : "";
+  div.innerHTML = `<strong>${user}:</strong> ${message}${isPrivate}`;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+
+    function appendSystemMessage(text) {
+      const div = document.createElement("div");
+      div.innerHTML = `<em>${text}</em>`;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  </script>
+</body>
+</html>

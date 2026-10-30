@@ -1,0 +1,3 @@
+----- Ingreso al sistema -----
+En la pantalla se muestra una ventana en la cual deberás colocar tu nombre para poder identificar a cada participante dentro de la pizarra interactiva y el chat. Este nombre se usará para mostrar quién está enviando mensajes en el chat, además de poder utilizar las herramientas que ofrece, ya que si no lo colocas no podrás hacer uso de estas.
+ 

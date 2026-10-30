@@ -1,0 +1,7 @@
+----- Mensaje Unicast -----
+Esta pizarra también cuenta con un chat el cual permitirá tener comunicación con los usuarios que se encuentran conectados, por lo que se puede mandar mensaje de forma privada al usuario que se desee. En la parte inferior derecha se muestra un cuadro de texto para escribir y otro recuadro el cual al hacer clic se despliega una lista donde se muestran los nombres de los usuarios conectados.
+También tenemos dos vistas: 
+	1. Remitente.
+	2. Destinatario.
+En donde ambos pueden visualizar el texto que se escribió y el usuario a quien se mando
+

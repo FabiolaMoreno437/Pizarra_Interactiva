@@ -1,0 +1,7 @@
+----- Mensaje Broadcast -----
+Esta es otra manera de mandar mensaje a los usuarios, sin embargo, este se encarga de que un solo usuario mande un mensaje a todos los que estén conectados. Por lo que a diferencia de Unicast, en este todos logran visualizar el mensaje que se mando.
+Para poder utilizar esta funcionalidad, en la parte inferior derecha se encuentra el recuadro que dice "Publico (todos)".
+Como se muestran en las imágenes tenemos las vistas:
+	1. Remitente.
+	2. Destinatarios.
+En las cuales se puede observar que a todos los usuarios "Fabis, Paco y Kenai" les muestra el nombre de quien lo mando en este caso "Mafer" y el mensaje que es "Hola"  

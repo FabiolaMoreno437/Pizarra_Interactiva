@@ -1,0 +1,9 @@
+----- Dibujar -----
+El usuario podrá seleccionar todas las herramientas que se muestran en pantalla de acuerdo a sus preferencias al igual que se mostrara la lista de los usuarios que están conectados.
+	1. Color: en la parte superior se encuentra la paleta de colores desde los mas claros hasta los más fuertes, los
+	cuales se seleccionan de acuerdo al dibujo que se esté realizando.
+    	2. Grosor: Este se encargar del tamaño del cursor el cual se encarga de pintar, se tiene desde el más delgado hasta 	el más grueso, dependiendo de que función se le quiera dar.
+	3. Dibujar: Una vez que seleccionas el color y el grosor puedes comenzar a dibujar. Se debe dar clic dentro del área 	de la pizarra y arrastrar el mouse para ir formando la figura que gustes, así como se muestra en la imagen. 
+	4. Limpiar: Esta funcionalidad es útil cuando requieres borrar todo lo que se dibujo en la pizarra para dejarla 	nuevamente en blanco y comenzar a dibujar de nuevo.
+     	5. Borrador: La siguiente funcionalidad también se encarga de borrar, pero a diferencia de "limpiar" esta se utiliza 	cuando solo quieres borrar ciertas partes que no fueron de tu agrado y las quieres volver a dibujar.
+	6. Guardar. En caso de que los usuarios quieran guardar el dibujo realizado se tiene el botón de "guardar" el cual 	lo va a descargar en formato png y así se evita estar tomando capturas de pantalla.

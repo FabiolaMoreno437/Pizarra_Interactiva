@@ -1,0 +1,4 @@
+----- Usuario desconectado -----
+Cuando requieras salir del sistema solo debes darle en el símbolo de "x" que se encuentra en la pestaña del navegador. Por lo que si un usuario llega a realizar esta acción a todos los que siguen conectados se les mostrará un mensaje el cual diga que el usuario se ha desconectado así como se muestra en la imagen y se borrara de la lista de usuarios a los cuales se les podrá mandar mensaje.
+
+En caso de que se quiera volver a ingresar al sistema se le mostrara todo lo que se dibujo y escribió cuando estaba conectada y también lo que se realizo estando desconectada.
